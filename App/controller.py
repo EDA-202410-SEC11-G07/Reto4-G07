@@ -25,6 +25,9 @@ import model
 import time
 import csv
 import tracemalloc
+import math
+from DISClib.ADT import list as lt
+from DISClib.ADT import map as mp 
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.
@@ -36,45 +39,75 @@ def new_controller():
     Crea una instancia del modelo
     """
     #TODO: Llamar la función del modelo que crea las estructuras de datos
-    pass
+    control = {}
+    control['model'] = model.new_data_structs()
+    return control
 
 
 # Funciones para la carga de datos
 
-def load_data(control, filename):
+def load_data(control):
     """
     Carga los datos del reto
     """
     # TODO: Realizar la carga de datos
-    pass
 
+    # Cargar los vertices
+    load_vertex(control)
 
-# Funciones de ordenamiento
+    # Cargar los arcos
+    load_edges(control)
 
-def sort(control):
+    model.concurrencies(control['model'])
+
+    return control
+
+def load_vertex(control):
     """
-    Ordena los datos del modelo
+    Carga los datos de los vertices
     """
-    #TODO: Llamar la función del modelo para ordenar los datos
-    pass
+    dir_airports = cf.data_dir + 'airports-2022.csv'
+    input_file = csv.DictReader(open(dir_airports), delimiter=';')
+    for airport in input_file:
+        airport['LATITUD'] = float(airport['LATITUD'].replace(',', '.'))
+        airport['LONGITUD'] = float(airport['LONGITUD'].replace(',', '.'))
+        airport['ALTITUD'] = float(airport['ALTITUD'].replace(',', '.'))
+        model.add_vertex(control['model'], airport)
+
+
+def load_edges(control):
+    """
+    Carga los datos de los arcos
+    """
+    dir_routes = cf.data_dir + 'fligths-2022.csv'
+    input_file = csv.DictReader(open(dir_routes), delimiter=';')
+    for flight in input_file:
+        flight['TIEMPO_VUELO'] = float(flight['TIEMPO_VUELO'])
+        model.add_edge(control['model'], flight)
+
 
 
 # Funciones de consulta sobre el catálogo
 
-def get_data(control, id):
-    """
-    Retorna un dato por su ID.
-    """
-    #TODO: Llamar la función del modelo para obtener un dato
-    pass
+def get_first_last(list):
+    filtered = lt.newList("ARRAY_LIST")
+    for i in range(1, 6):
+        lt.addLast(filtered, lt.getElement(list, i))
+    for i in range(-4, 1):
+        lt.addLast(filtered, lt.getElement(list, i))
+    return filtered
 
 
-def req_1(control):
+def req_1(control,latitud1, longitud1, latitud2, longitud2):
     """
     Retorna el resultado del requerimiento 1
     """
-    # TODO: Modificar el requerimiento 1
-    pass
+    itime=get_time()
+    aeropuertos_intermedios,distancia_total,total_aeropuertos , vertice_origen, vertice_destino, tiempo_trayecto =  model.req_1(control["model"],latitud1, longitud1, latitud2, longitud2)
+    ftine=get_time()
+    dtine=round(delta_time(itime, ftine),2)
+    print(f"\nEl tiempo que se demora algoritmo en encontrar la solución : {dtine} ms\n")
+    return aeropuertos_intermedios,distancia_total,total_aeropuertos , vertice_origen, vertice_destino, tiempo_trayecto
 
 
 def req_2(control):
@@ -89,9 +122,12 @@ def req_3(control):
     """
     Retorna el resultado del requerimiento 3
     """
-    # TODO: Modificar el requerimiento 3
-    pass
-
+    itime=get_time()
+    vertices, weight, mayor_concurrencia =  model.req_3(control["model"])
+    ftine=get_time()
+    dtine=round(delta_time(itime, ftine),2)
+    print(f"\nEl tiempo que se demora algoritmo en encontrar la solución : {dtine} ms\n")
+    return vertices, weight, mayor_concurrencia
 
 def req_4(control):
     """
@@ -105,15 +141,19 @@ def req_5(control):
     """
     Retorna el resultado del requerimiento 5
     """
-    # TODO: Modificar el requerimiento 5
     pass
 
-def req_6(control):
+def req_6(control, m_airports):
     """
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
-    pass
+    i_time = get_time()
+    paths, most_important = model.req_6(control["model"], m_airports)
+    f_time = get_time()
+    d_time = round(delta_time(i_time, f_time), 2)
+    print(f"\nEl tiempo que se demora algoritmo en encontrar la solución : {d_time} ms\n")
+    return paths, most_important
 
 
 def req_7(control):
