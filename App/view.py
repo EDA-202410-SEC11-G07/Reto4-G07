@@ -1,4 +1,5 @@
-﻿"""
+﻿
+"""
  * Copyright 2020, Departamento de sistemas y Computación, Universidad
  * de Los Andes
  *
@@ -186,10 +187,23 @@ def print_req_3(control):
     
 def print_req_4(control):
     """
-        Función que imprime la solución del Requerimiento 4 en consola
+    Función que imprime la solución del Requerimiento 4 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 4
-    pass
+    vertices, weight, mayor_concurrencia = controller.req_4(control)
+    weight = round(weight, 2)
+    print("-------------------REQ 4 INFO -------------------")
+    print("INFORMACION DEL AEROPUERTO MÁS IMPORTANTE SEGÚN LA CONCURRENCIA DE CARGA: \n")
+    print("Identificador ICAO: " + mayor_concurrencia['ICAO'])
+    print("Nombre: " + mayor_concurrencia['NOMBRE'])
+    print("Ciudad: " + mayor_concurrencia['CIUDAD'])
+    print("País: " + mayor_concurrencia['PAIS'])
+    print("Valor de concurrencia de carga: " + str(mayor_concurrencia['concurrency_comercial']))
+    print("Suma de la distancia total de los trayectos: " + str(weight) + " km")
+    print("Número total de trayectos posibles: " + str(len(vertices)) + "\n")
+    print("-------------------INFO SECUENCIA DE TRAYECTOS -------------------")
+    print_tabulate_5(vertices, ['Origen', "Destino", 'weight', "Tiempo"])
+
+
 
 
 def print_req_5(control):
@@ -253,6 +267,12 @@ if __name__ == "__main__":
     while working:
         print_menu()
         inputs = input('Seleccione una opción para continuar\n')
+
+
+
+
+
+
         if int(inputs) == 1:
             print("Cargando información de los archivos ....\n")
             data = load_data(control)

@@ -133,8 +133,12 @@ def req_4(control):
     """
     Retorna el resultado del requerimiento 4
     """
-    # TODO: Modificar el requerimiento 4
-    pass
+    itime = get_time()
+    vertices, weight, mayor_concurrencia = model.req_4(control["model"])
+    ftime = get_time()
+    dtime = round(delta_time(itime, ftime), 2)
+    print(f"\nEl tiempo que se demora el algoritmo en encontrar la solución: {dtime} ms\n")
+    return vertices, weight, mayor_concurrencia
 
 
 def req_5(control):

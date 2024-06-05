@@ -323,8 +323,60 @@ def req_4(data_structs):
     """
     Función que soluciona el requerimiento 4
     """
-    # TODO: Realizar el requerimiento 4
-    pass
+    trayectos = lt.newList("ARRAY_LIST")
+    
+    graph_carga_distance = data_structs["graph_charge_distance"]
+    
+    concurrency_carga = data_structs["concurrency_charge"]
+    mayor_concurrencia = lt.firstElement(concurrency_carga)
+    
+    search = prim.PrimMST(graph_carga_distance, mayor_concurrencia["ICAO"])
+    peso = prim.weightMST(graph_carga_distance, search)
+
+    subgrafo = gr.newGraph(datastructure="ADJ_LIST", directed=True, cmpfunction=compare_id)
+    mst = search["mst"]
+    for minicamino in lt.iterator(mst):
+        add_vertice(subgrafo, minicamino["vertexA"])
+        add_vertice(subgrafo, minicamino["vertexB"])
+        add_arco(subgrafo, minicamino["vertexA"], minicamino["vertexB"], minicamino["weight"])
+    
+    sub_bfs = bfs.BreathFirstSearch(subgrafo, mayor_concurrencia["ICAO"])
+    
+    lt.deleteElement(concurrency_carga, 1)
+    
+    for aeropuerto in lt.iterator(concurrency_carga):
+        tiene = bfs.hasPathTo(sub_bfs, aeropuerto["ICAO"])
+        if tiene:
+            camino = bfs.pathTo(sub_bfs, aeropuerto["ICAO"])
+            prev = None
+            for vertice in lt.iterator(camino):
+                if prev is None:
+                    prev = vertice
+                else:
+                    minipath = {"vertexA": prev, "vertexB": vertice, "weight": 0}
+                    prev = vertice
+                    v1 = minipath["vertexA"]
+                    v2 = minipath["vertexB"]
+                    v1_info = me.getValue(mp.get(data_structs["hash_airports"], v1))
+                    v2_info = me.getValue(mp.get(data_structs["hash_airports"], v2))
+                    lat1_bono = float(v1_info["LATITUD"])
+                    long1_bono = float(v1_info["LONGITUD"])
+                    lat2_bono = float(v2_info["LATITUD"])
+                    long2_bono = float(v2_info["LONGITUD"])
+                    minipath["weight"] = haversine(lat1_bono, long1_bono, lat2_bono, long2_bono)
+                    peso += minipath["weight"]
+                    vuelo_info = me.getValue(mp.get(data_structs["hash_routes"], v2 + "-" + v1 + "-AVIACION_CARGA"))
+                    info_trayectos = {
+                        "Origen": v1,
+                        "Destino": v2,
+                        "weight": minipath["weight"],
+                        "Tiempo": vuelo_info["TIEMPO_VUELO"]
+                    }
+                    lt.addLast(trayectos, info_trayectos)
+    
+    lt.addFirst(concurrency_carga, mayor_concurrencia)
+    
+    return trayectos, peso, mayor_concurrencia
 
 
 def req_5(data_structs):
